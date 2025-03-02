@@ -23,6 +23,10 @@ def make_lmdb_from_imgs(
     print(f"Creating LMDB for {data_path} at {lmdb_path}...")
     if not lmdb_path.endswith(".lmdb"):
         raise ValueError("LMDB path must end with .lmdb")
+
+    # Create directory if it doesn't exist
+    os.makedirs(osp.dirname(lmdb_path), exist_ok=True)
+
     if osp.exists(lmdb_path):
         print(f"LMDB {lmdb_path} already exists. Exiting.")
         sys.exit(1)
@@ -54,22 +58,22 @@ def make_lmdb_from_imgs(
                 import numpy as np
                 img = np.array(Image.open(osp.join(data_path, path)))[:, :, ::-1]  # RGB to BGR
 
-                # Encode and write to LMDB
-                _, img_byte = cv2.imencode(".png", img, [cv2.IMWRITE_PNG_COMPRESSION, compress_level])
-                txn.put(key_str, img_byte)
+            # Encode and write to LMDB
+            _, img_byte = cv2.imencode(".png", img, [cv2.IMWRITE_PNG_COMPRESSION, compress_level])
+            txn.put(key_str, img_byte)
 
-                # Write metadata
-                h, w = img.shape[:2]
-                c = 1 if img.ndim == 2 else img.shape[2]
-                txt_file.write(f"{key}.png ({h},{w},{c}) {compress_level}\n")
+            # Write metadata
+            h, w = img.shape[:2]
+            c = 1 if img.ndim == 2 else img.shape[2]
+            txt_file.write(f"{key}.png ({h},{w},{c}) {compress_level}\n")
 
-                # Commit every `batch` images (corrected logic)
-                if (idx + 1) % batch == 0:  # Fix: +1 to commit after batch size
-                    txn.commit()
+            # Commit every `batch` images (corrected logic)
+            if (idx + 1) % batch == 0:  # Fix: +1 to commit after batch size
+                txn.commit()
                 txn = env.begin(write=True)
                 env.sync()  # Force flush to disk
 
-                pbar.update(1)
+            pbar.update(1)
     finally:
         pbar.close()
         txn.commit()
