@@ -1,7 +1,7 @@
 {
   "task": "001_train_rvrt_videosr_bi_reds_30frames",
   "model": "vrt",
-  "gpu_ids": [0, 1, 2, 3, 4, 5, 6, 7],
+  "gpu_ids": [0],
   "dist": true,
   "find_unused_parameters": false,
   "use_static_graph": true,
@@ -19,14 +19,14 @@
     "train": {
       "name": "train_dataset",
       "dataset_type": "VideoRecurrentTrainDataset",
-      "dataroot_gt": "trainsets/REDS/train_sharp_with_val.lmdb",
-      "dataroot_lq": "trainsets/REDS/train_sharp_bicubic_with_val.lmdb",
+      "dataroot_gt": "/kaggle/input/reds4-dataset/REDS/train/train_sharp",
+      "dataroot_lq": "/kaggle/input/reds4-dataset/REDS_LR/train/train_sharp_bicubic/X4",
       "meta_info_file": "data/meta_info/meta_info_REDS_GT.txt",
       "filename_tmpl": "08d",
       "filename_ext": "png",
       "val_partition": "REDS4",
       "test_mode": false,
-      "io_backend": { "type": "lmdb" },
+      "io_backend": { "type": "disk" },
       "num_frame": 30,
       "gt_size": 256,
       "interval_list": [1],
@@ -35,7 +35,7 @@
       "use_rot": true,
 
       "dataloader_shuffle": true,
-      "dataloader_num_workers": 32,
+      "dataloader_num_workers": 2,
       "dataloader_batch_size": 2
     },
     "test": {
