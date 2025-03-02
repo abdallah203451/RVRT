@@ -52,7 +52,7 @@ def make_lmdb_from_imgs(
                 # Fallback to PIL for problematic images
                 from PIL import Image
                 import numpy as np
-                img = np.array(Image.open(osp.join(data_path, path))[:, :, ::-1]  # RGB to BGR
+                img = np.array(Image.open(osp.join(data_path, path)))[:, :, ::-1]  # RGB to BGR
 
                 # Encode and write to LMDB
                 _, img_byte = cv2.imencode(".png", img, [cv2.IMWRITE_PNG_COMPRESSION, compress_level])
