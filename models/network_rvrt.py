@@ -102,7 +102,7 @@ class SpyNet(nn.Module):
     def __init__(self, load_path=None, return_levels=[5]):
         super(SpyNet, self).__init__()
         self.return_levels = return_levels
-        self.basic_module = nn.ModuleList([BasicModule() for _ in range(6)])
+        self.basic_module = nn.ModuleList([BasicModule() for _ in range(3)])
         if load_path:
             if not os.path.exists(load_path):
                 import requests
@@ -127,7 +127,7 @@ class SpyNet(nn.Module):
         ref = [self.preprocess(ref)]
         supp = [self.preprocess(supp)]
 
-        for level in range(5):
+        for level in range(3):
             ref.insert(0, F.avg_pool2d(input=ref[0], kernel_size=2, stride=2, count_include_pad=False))
             supp.insert(0, F.avg_pool2d(input=supp[0], kernel_size=2, stride=2, count_include_pad=False))
 
@@ -137,7 +137,7 @@ class SpyNet(nn.Module):
              int(math.floor(ref[0].size(3) / 2.0))])
 
         for level in range(len(ref)):
-            upsampled_flow = F.interpolate(input=flow, scale_factor=2, mode='bilinear', align_corners=True) * 2.0
+            upsampled_flow = F.interpolate(input=flow, scale_factor=2, mode='nearest') * 2.0
 
             if upsampled_flow.size(2) != ref[level].size(2):
                 upsampled_flow = F.pad(input=upsampled_flow, pad=[0, 0, 0, 1], mode='replicate')
@@ -162,16 +162,17 @@ class SpyNet(nn.Module):
         return flow_list
 
     def forward(self, ref, supp):
-        assert ref.size() == supp.size()
+        with torch.cuda.amp.autocast():
+            assert ref.size() == supp.size()
 
-        h, w = ref.size(2), ref.size(3)
-        w_floor = math.floor(math.ceil(w / 32.0) * 32.0)
-        h_floor = math.floor(math.ceil(h / 32.0) * 32.0)
+            h, w = ref.size(2), ref.size(3)
+            w_floor = math.floor(math.ceil(w / 32.0) * 32.0)
+            h_floor = math.floor(math.ceil(h / 32.0) * 32.0)
 
-        ref = F.interpolate(input=ref, size=(h_floor, w_floor), mode='bilinear', align_corners=False)
-        supp = F.interpolate(input=supp, size=(h_floor, w_floor), mode='bilinear', align_corners=False)
+            ref = F.interpolate(input=ref, size=(h_floor, w_floor), mode='bilinear', align_corners=False)
+            supp = F.interpolate(input=supp, size=(h_floor, w_floor), mode='bilinear', align_corners=False)
 
-        flow_list = self.process(ref, supp, w, h, w_floor, h_floor)
+            flow_list = self.process(ref, supp, w, h, w_floor, h_floor)
 
         return flow_list[0] if len(flow_list) == 1 else flow_list
 
