@@ -99,7 +99,7 @@ class SpyNet(nn.Module):
         return_levels (list[int]): return flows of different levels. Default: [5].
     """
 
-    def __init__(self, load_path=None, return_levels=[5]):
+    def __init__(self, load_path=None, return_levels=[2]):
         super(SpyNet, self).__init__()
         self.return_levels = return_levels
         self.basic_module = nn.ModuleList([BasicModule() for _ in range(3)])
