@@ -127,7 +127,7 @@ class SpyNet(nn.Module):
         ref = [self.preprocess(ref)]
         supp = [self.preprocess(supp)]
 
-        for level in range(3):
+        for level in range(2):
             ref.insert(0, F.avg_pool2d(input=ref[0], kernel_size=2, stride=2, count_include_pad=False))
             supp.insert(0, F.avg_pool2d(input=supp[0], kernel_size=2, stride=2, count_include_pad=False))
 
