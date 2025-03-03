@@ -916,33 +916,24 @@ class RVRT(nn.Module):
         self.conv_last = nn.Conv3d(64, 3, kernel_size=(1, 3, 3), padding=(0, 1, 1))
 
     def compute_flow(self, lqs):
-        """Compute optical flow using SPyNet for feature alignment.
-
-        Note that if the input is an mirror-extended sequence, 'flows_forward'
-        is not needed, since it is equal to 'flows_backward.flip(1)'.
-
-        Args:
-            lqs (tensor): Input low quality (LQ) sequence with
-                shape (n, t, c, h, w).
-
-        Return:
-            tuple(Tensor): Optical flow. 'flows_forward' corresponds to the
-                flows used for forward-time propagation (current to previous).
-                'flows_backward' corresponds to the flows used for
-                backward-time propagation (current to next).
-        """
-
         n, t, c, h, w = lqs.size()
         lqs_1 = lqs[:, :-1, :, :, :].reshape(-1, c, h, w)
         lqs_2 = lqs[:, 1:, :, :, :].reshape(-1, c, h, w)
 
-        flows_backward = self.spynet(lqs_1, lqs_2).view(n, t - 1, 2, h, w)
+        flows_out = self.spynet(lqs_1, lqs_2)
+        if isinstance(flows_out, list):
+            flows_backward = flows_out[0].view(n, t - 1, 2, h, w)
+        else:
+            flows_backward = flows_out.view(n, t - 1, 2, h, w)
 
-        if self.is_mirror_extended:  # flows_forward = flows_backward.flip(1)
+        if self.is_mirror_extended:
             flows_forward = None
         else:
-            flows_forward = self.spynet(lqs_2, lqs_1).view(n, t - 1, 2, h, w)
-
+            flows_out_fwd = self.spynet(lqs_2, lqs_1)
+            if isinstance(flows_out_fwd, list):
+                flows_forward = flows_out_fwd[0].view(n, t - 1, 2, h, w)
+            else:
+                flows_forward = flows_out_fwd.view(n, t - 1, 2, h, w)
         return flows_forward, flows_backward
 
     def check_if_mirror_extended(self, lqs):
