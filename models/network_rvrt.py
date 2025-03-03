@@ -920,20 +920,17 @@ class RVRT(nn.Module):
         lqs_1 = lqs[:, :-1, :, :, :].reshape(-1, c, h, w)
         lqs_2 = lqs[:, 1:, :, :, :].reshape(-1, c, h, w)
 
-        flows_out = self.spynet(lqs_1, lqs_2)
-        if isinstance(flows_out, list):
-            flows_backward = flows_out[0].view(n, t - 1, 2, h, w)
-        else:
-            flows_backward = flows_out.view(n, t - 1, 2, h, w)
+        flows_out = self.spynet(lqs_1, lqs_2)  # Output shape: [n*(t-1), 2, H, W]
+        # Upsample to match original spatial dimensions:
+        flows_out = F.interpolate(flows_out, size=(h, w), mode='bilinear', align_corners=False)
+        flows_backward = flows_out.view(n, t - 1, 2, h, w)
 
         if self.is_mirror_extended:
             flows_forward = None
         else:
             flows_out_fwd = self.spynet(lqs_2, lqs_1)
-            if isinstance(flows_out_fwd, list):
-                flows_forward = flows_out_fwd[0].view(n, t - 1, 2, h, w)
-            else:
-                flows_forward = flows_out_fwd.view(n, t - 1, 2, h, w)
+            flows_out_fwd = F.interpolate(flows_out_fwd, size=(h, w), mode='bilinear', align_corners=False)
+            flows_forward = flows_out_fwd.view(n, t - 1, 2, h, w)
         return flows_forward, flows_backward
 
     def check_if_mirror_extended(self, lqs):
