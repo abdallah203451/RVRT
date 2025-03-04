@@ -223,6 +223,7 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
                 test_results['psnr_y'] = []
                 test_results['ssim_y'] = []
 
+                gt = None
                 for idx, test_data in enumerate(test_loader):
                     model.feed_data(test_data)
                     model.test()
