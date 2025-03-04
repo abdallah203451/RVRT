@@ -35,7 +35,6 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
     # Step--1 (prepare opt)
     # ----------------------------------------
     '''
-    print('prepare opt')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--opt', type=str, default=json_path, help='Path to option JSON file.')
@@ -110,7 +109,6 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
     # Step--2 (creat dataloader)
     # ----------------------------------------
     '''
-    print('creat dataloader')
 
     # ----------------------------------------
     # 1) create_dataset
@@ -153,7 +151,6 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
     # Step--3 (initialize model)
     # ----------------------------------------
     '''
-    print('initialize model')
 
     model = define_Model(opt)
     model.init_train()
@@ -168,29 +165,24 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
     '''
 
     for epoch in range(10):  # keep running
-        print(epoch)
+        print('epoch number: ' , epoch)
         for i, train_data in enumerate(train_loader):
-            print(i)
-
             current_step += 1
 
             # -------------------------------
             # 1) update learning rate
             # -------------------------------
             model.update_learning_rate(current_step)
-            print('step 1')
 
             # -------------------------------
             # 2) feed patch pairs
             # -------------------------------
             model.feed_data(train_data)
-            print('step 2')
 
             # -------------------------------
             # 3) optimize parameters
             # -------------------------------
             model.optimize_parameters(current_step)
-            print('step 3')
 
             # -------------------------------
             # 4) training information
@@ -203,7 +195,6 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
                     message += '{:s}: {:.3e} '.format(k, v)
                 logger.info(message)
 
-            print('step 4')
 
             # -------------------------------
             # 5) save model
@@ -222,7 +213,6 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
                             'will be terminated by PyTorch in the next iteration. Just resume training with the same '
                             '.json config file.')
 
-            print('step 5')
 
             # -------------------------------
             # 6) testing
@@ -312,7 +302,6 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
                                 'PSNR_Y: {:.2f} dB; SSIM_Y: {:.4f}'.format(
                         epoch, current_step, ave_psnr, ave_ssim, ave_psnr_y, ave_ssim_y))
 
-            print('step 6')
             if current_step > opt['train']['total_iter']:
                 logger.info('Finish training.')
                 model.save(current_step)
