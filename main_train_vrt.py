@@ -171,7 +171,6 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
         print(epoch)
         for i, train_data in enumerate(train_loader):
             print(i)
-            print(train_data)
 
             current_step += 1
 
