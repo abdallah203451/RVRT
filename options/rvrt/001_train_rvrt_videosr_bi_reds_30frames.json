@@ -11,7 +11,7 @@
 
   "path": {
     "root": "experiments",
-    "pretrained_netG": "/kaggle/working/RVRT/Fine_Tuned_Weights.pth", //"/content/RVRT/001_RVRT_videosr_bi_REDS_30frames.pth"
+    "pretrained_netG": "/kaggle/working/RVRT/001_RVRT_videosr_bi_REDS_30frames.pth", //"/content/RVRT/001_RVRT_videosr_bi_REDS_30frames.pth"
     "pretrained_netE": null
   },
 
