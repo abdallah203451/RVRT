@@ -27,8 +27,8 @@
       "val_partition": "REDS4",
       "test_mode": false,
       "io_backend": { "type": "disk" },
-      "num_frame": 3,
-      "gt_size": 128,
+      "num_frame": 20,
+      "gt_size": 256,
       "interval_list": [1],
       "random_reverse": false,
       "use_hflip": true,
@@ -36,13 +36,13 @@
 
       "dataloader_shuffle": true,
       "dataloader_num_workers": 2,
-      "dataloader_batch_size": 1
+      "dataloader_batch_size": 2
     },
     "test": {
       "name": "test_dataset",
       "dataset_type": "VideoRecurrentTestDataset",
-      "dataroot_gt": "testsets/REDS4/GT",
-      "dataroot_lq": "testsets/REDS4/sharp_bicubic",
+      "dataroot_gt": "/kaggle/input/reds-vsr/REDS_val/val/val_sharp",
+      "dataroot_lq": "/kaggle/input/reds-vsr/REDS_val_LR/val/val_sharp_bicubic/X4",
       "cache_data": true,
       "io_backend": { "type": "disk" },
       "num_frame": -1

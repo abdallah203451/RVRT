@@ -1327,16 +1327,17 @@ class SpyNet(nn.Module):
         return flow_list
 
     def forward(self, ref, supp):
-        assert ref.size() == supp.size()
+        with torch.cuda.amp.autocast():  # Enables mixed precision
+            assert ref.size() == supp.size()
 
-        h, w = ref.size(2), ref.size(3)
-        w_floor = math.floor(math.ceil(w / 32.0) * 32.0)
-        h_floor = math.floor(math.ceil(h / 32.0) * 32.0)
+            h, w = ref.size(2), ref.size(3)
+            w_floor = math.floor(math.ceil(w / 32.0) * 32.0)
+            h_floor = math.floor(math.ceil(h / 32.0) * 32.0)
 
-        ref = F.interpolate(input=ref, size=(h_floor, w_floor), mode='bilinear', align_corners=False)
-        supp = F.interpolate(input=supp, size=(h_floor, w_floor), mode='bilinear', align_corners=False)
+            ref = F.interpolate(input=ref, size=(h_floor, w_floor), mode='bilinear', align_corners=False)
+            supp = F.interpolate(input=supp, size=(h_floor, w_floor), mode='bilinear', align_corners=False)
 
-        flow_list = self.process(ref, supp, w, h, w_floor, h_floor)
+            flow_list = self.process(ref, supp, w, h, w_floor, h_floor)
 
         return flow_list[0] if len(flow_list) == 1 else flow_list
 
@@ -1903,6 +1904,20 @@ class Upsample(nn.Sequential):
             raise ValueError(f'scale {scale} is not supported. ' 'Supported scales: 2^n and 3.')
         super(Upsample, self).__init__(*m)
 
+#My Code
+class ResidualRefinement(nn.Module):
+    def __init__(self, channels, num_blocks=3):
+        super(ResidualRefinement, self).__init__()
+        layers = []
+        for _ in range(num_blocks):
+            layers.append(nn.Conv3d(channels, channels, kernel_size=3, padding=1))
+            layers.append(nn.LeakyReLU(negative_slope=0.1, inplace=True))
+        self.refinement = nn.Sequential(*layers)
+
+    def forward(self, x):
+        # Residual connection: add the input to the refined output
+        return x + self.refinement(x)
+
 
 class RVRT(nn.Module):
     """ Recurrent Video Restoration Transformer with Guided Deformable Attention (RVRT).
@@ -2076,6 +2091,9 @@ class RVRT(nn.Module):
                                                             padding=(0, 0, 0)),
                                                   nn.LeakyReLU(negative_slope=0.1, inplace=True)
                                                   )
+        # Added Residual Refinement module to further improve feature quality
+        self.refinement = ResidualRefinement(64, num_blocks=3)
+
         self.upsampler = Upsample(4, 64)
         self.conv_last = nn.Conv3d(64, 3, kernel_size=(1, 3, 3), padding=(0, 1, 1))
 
@@ -2260,6 +2278,12 @@ class RVRT(nn.Module):
             for i in range(0, feats['shallow'].shape[1]):
                 hr = torch.cat([feats[k][:, i:i + 1, :, :, :] for k in feats], dim=2)
                 hr = self.reconstruction(hr.cuda())
+
+                # NEW: Transpose and apply the conv_before_upsampler
+                hr = self.conv_before_upsampler(hr.transpose(1, 2))
+                # NEW: Pass through the residual refinement module
+                hr = self.refinement(hr)
+
                 hr = self.conv_last(self.upsampler(self.conv_before_upsampler(hr.transpose(1, 2)))).transpose(1, 2)
                 hr += torch.nn.functional.interpolate(lqs[:, i:i + 1, :, :, :].cuda(), size=hr.shape[-3:],
                                                       mode='trilinear', align_corners=False)
@@ -2272,6 +2296,11 @@ class RVRT(nn.Module):
         else:
             hr = torch.cat([feats[k] for k in feats], dim=2)
             hr = self.reconstruction(hr)
+
+            # NEW: Apply the refinement
+            hr = self.conv_before_upsampler(hr.transpose(1, 2))
+            hr = self.refinement(hr)
+
             hr = self.conv_last(self.upsampler(self.conv_before_upsampler(hr.transpose(1, 2)))).transpose(1, 2)
             hr += torch.nn.functional.interpolate(lqs, size=hr.shape[-3:], mode='trilinear', align_corners=False)
 
