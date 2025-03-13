@@ -19,8 +19,8 @@
     "train": {
       "name": "train_dataset",
       "dataset_type": "VideoRecurrentTrainDataset",
-      "dataroot_gt": "/kaggle/input/reds4-dataset/REDS/train/train_sharp",
-      "dataroot_lq": "/kaggle/input/reds4-dataset/REDS_LR/train/train_sharp_bicubic/X4",
+      "dataroot_gt": "/kaggle/input/reds-vsr/REDS/train/train_sharp",
+      "dataroot_lq": "/kaggle/input/reds-vsr/REDS_LR/train/train_sharp_bicubic/X4",
       "meta_info_file": "data/meta_info/meta_info_REDS_GT.txt",
       "filename_tmpl": "08d",
       "filename_ext": "png",
