@@ -43,7 +43,7 @@
       "dataset_type": "VideoRecurrentTestDataset",
       "dataroot_gt": "/kaggle/input/reds-vsr/REDS_val/val/val_sharp",
       "dataroot_lq": "/kaggle/input/reds-vsr/REDS_val_LR/val/val_sharp_bicubic/X4",
-      "cache_data": true,
+      "cache_data": false,
       "io_backend": { "type": "disk" },
       "num_frame": -1
     }
