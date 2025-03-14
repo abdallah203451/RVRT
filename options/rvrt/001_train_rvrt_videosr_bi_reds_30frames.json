@@ -36,7 +36,7 @@
 
       "dataloader_shuffle": true,
       "dataloader_num_workers": 2,
-      "dataloader_batch_size": 2
+      "dataloader_batch_size": 1
     },
     "test": {
       "name": "test_dataset",
