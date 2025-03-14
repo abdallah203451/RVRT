@@ -2284,7 +2284,9 @@ class RVRT(nn.Module):
                 # NEW: Pass through the residual refinement module
                 hr = self.refinement(hr)
 
-                hr = self.conv_last(self.upsampler(self.conv_before_upsampler(hr.transpose(1, 2)))).transpose(1, 2)
+                #hr = self.conv_last(self.upsampler(self.conv_before_upsampler(hr.transpose(1, 2)))).transpose(1, 2)
+                hr = self.conv_last(self.upsampler(hr)).transpose(1, 2) #Replaced the above line
+
                 hr += torch.nn.functional.interpolate(lqs[:, i:i + 1, :, :, :].cuda(), size=hr.shape[-3:],
                                                       mode='trilinear', align_corners=False)
                 hr = hr.cpu()
@@ -2301,7 +2303,9 @@ class RVRT(nn.Module):
             hr = self.conv_before_upsampler(hr.transpose(1, 2))
             hr = self.refinement(hr)
 
-            hr = self.conv_last(self.upsampler(self.conv_before_upsampler(hr.transpose(1, 2)))).transpose(1, 2)
+            #hr = self.conv_last(self.upsampler(self.conv_before_upsampler(hr.transpose(1, 2)))).transpose(1, 2)
+            hr = self.conv_last(self.upsampler(hr)).transpose(1, 2) #Replaced the above line
+
             hr += torch.nn.functional.interpolate(lqs, size=hr.shape[-3:], mode='trilinear', align_corners=False)
 
             return hr
