@@ -1302,7 +1302,7 @@ class SpyNet(nn.Module):
              int(math.floor(ref[0].size(3) / 2.0))])
 
         for level in range(len(ref)):
-            upsampled_flow = F.interpolate(input=flow, scale_factor=2, mode='bilinear', align_corners=True) * 2.0
+            upsampled_flow = F.interpolate(input=flow, scale_factor=2, mode='nearest') * 2.0
 
             if upsampled_flow.size(2) != ref[level].size(2):
                 upsampled_flow = F.pad(input=upsampled_flow, pad=[0, 0, 0, 1], mode='replicate')
