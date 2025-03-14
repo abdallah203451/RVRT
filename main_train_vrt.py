@@ -194,6 +194,8 @@ def main(json_path='options/vrt/001_train_vrt_videosr_bi_reds_6frames.json'):
                 for k, v in logs.items():  # merge log information into message
                     message += '{:s}: {:.3e} '.format(k, v)
                 logger.info(message)
+                
+            print("111111111\n")
 
 
             # -------------------------------
